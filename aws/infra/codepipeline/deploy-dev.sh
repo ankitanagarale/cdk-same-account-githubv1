@@ -26,11 +26,7 @@ echo "Extracting and assuming Deployer role for cross account"
 # export AWS_DEFAULT_REGION=us-east-1
 
 aws s3 ls
-echo "Zipping files for codedeploy"
-DEPLOYMENT_PACKAGE_NAME="deployment-package-$(date +"%Y%m%d%H%M%S").zip"
-sed -i "s|{{WAR_FILE_NAME}}|cas-scheduler.war|g" appspec.yml
-zip -r $DEPLOYMENT_PACKAGE_NAME appspec.yml application_start.sh cas-scheduler.war
-echo "Copying zipped files to cross-account S3 bucket which will be utilized for codedeploy"
+
 # aws s3 cp cas-scheduler.war $S3_BUCKET_PATH/ROOT.war
 # aws ssm send-command \
 #   --document-name "AWS-RunShellScript" \
@@ -38,6 +34,13 @@ echo "Copying zipped files to cross-account S3 bucket which will be utilized for
 #   --parameters '{"commands":["sudo /opt/apache-tomcat-9.0.96/bin/shutdown.sh","sudo rm -rf /opt/apache-tomcat-9.0.96/webapps/*", "aws s3 cp s3://dev-deploystage-sameaccount/ROOT.war /opt/apache-tomcat-9.0.96/webapps/", "sudo /opt/apache-tomcat-9.0.96/bin/startup.sh"]}' \
 #   --region ap-south-1
 
+
+echo "Zipping files for codedeploy"
+DEPLOYMENT_PACKAGE_NAME="deployment-package-$(date +"%Y%m%d%H%M%S").zip"
+sed -i "s|{{WAR_FILE_NAME}}|cas-scheduler.war|g" appspec.yml
+zip -r $DEPLOYMENT_PACKAGE_NAME appspec.yml application_start.sh cas-scheduler.war
+echo "Copying zipped files to cross-account S3 bucket which will be utilized for codedeploy"
+aws s3 cp $DEPLOYMENT_PACKAGE_NAME $S3_BUCKET_PATH/$DEPLOYMENT_PACKAGE_NAME
 echo "Codedeploy deployment started"
 aws deploy create-deployment \
   --application-name dev-deploystage-application \
