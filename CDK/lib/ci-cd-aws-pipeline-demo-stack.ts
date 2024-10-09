@@ -105,8 +105,8 @@ export class CiCdAwsPipelineDemoStack extends cdk.Stack {
       },
       env: {
         STAGE: 'dev',
-        S3_BUCKET: 'dev-deploydevstage-sameaccount',
-        BUCKET_PATH: 's3://dev-deploydevstage-sameaccount',
+        CROSS_ACCOUNT_S3_BUCKET: 'dev-deploydevstage-sameaccount',
+        CROSS_ACCOUNT_S3_BUCKET_PATH: 's3://dev-deploydevstage-sameaccount',
       },
       role: devRole,
     }));
