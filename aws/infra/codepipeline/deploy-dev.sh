@@ -29,11 +29,28 @@ echo "Zipping files for codedeploy"
 sed -i "s|{{WAR_FILE_NAME}}|cas-scheduler.war|g" appspec.yml
 # zip -r $DEPLOYMENT_PACKAGE_NAME appspec.yml application_start.sh cas-scheduler.war
 echo "Copying zipped files to cross-account S3 bucket which will be utilized for codedeploy"
-aws s3 cp cas-scheduler.war $CROSS_ACCOUNT_S3_BUCKET_PATH/ROOT.war
+aws s3 cp cas-scheduler.war $S3_BUCKET_PATH/ROOT.war
 
 # aws ssm send-command --document-name "AWS-RunShellScript" --targets \'[{"Key":"InstanceIds","Values":["i-04f30b7623100c3b2"]}]\' --parameters \'commands=["sudo /opt/apache-tomcat-9.0.95/bin/shutdown.sh","sudo rm -rf /opt/apache-tomcat-9.0.95/webapps/*", "aws s3 cp s3://test-cicdl3suawsbodhl63-lab/ROOT.war /opt/apache-tomcat-9.0.95/webapps/", "sudo /opt/apache-tomcat-9.0.95/bin/startup.sh"]\' --region us-east-1 
 aws ssm send-command \
   --document-name "AWS-RunShellScript" \
   --targets '[{"Key":"InstanceIds","Values":["i-08beda7d1d506579b"]}]' \
-  --parameters '{"commands":["sudo /opt/apache-tomcat-9.0.95/bin/shutdown.sh","sudo rm -rf /opt/apache-tomcat-9.0.95/webapps/*", "aws s3 cp s3://dev-deploydevstage-sameaccount/ROOT.war /opt/apache-tomcat-9.0.95/webapps/", "sudo /opt/apache-tomcat-9.0.95/bin/startup.sh"]}' \
-  --region us-east-1
+  --parameters '{"commands":["sudo /opt/apache-tomcat-9.0.95/bin/shutdown.sh","sudo rm -rf /opt/apache-tomcat-9.0.95/webapps/*", "aws s3 cp s3://dev-deploystage-sameaccount/ROOT.war /opt/apache-tomcat-9.0.95/webapps/", "sudo /opt/apache-tomcat-9.0.95/bin/startup.sh"]}' \
+  --region ap-south-1
+
+# echo "Codedeploy deployment started"
+# aws deploy create-deployment \
+#   --application-name dev-deploystage-application \
+#   --deployment-config-name CodeDeployDefault.OneAtATime \
+#   --deployment-group-name dev-deploystage-deploygroup \
+#   --description "Deployment Description" \
+#   --s3-location bucket=$CROSS_ACCOUNT_S3_BUCKET,bundleType=zip,key=$DEPLOYMENT_PACKAGE_NAME \
+#   --region ap-south-1
+# echo "Waiting for deployment to complete..."
+# deploymentId=$(aws deploy list-deployments \
+#   --application-name test-cross-teest-680-application \
+#   --deployment-group-name test-cross-teest-680-deploygroup \
+#   --region ap-south-1 \
+#   --query 'deployments[0]' --output text)
+# aws deploy wait deployment-successful --deployment-id $deploymentId --region ap-south-1
+  
