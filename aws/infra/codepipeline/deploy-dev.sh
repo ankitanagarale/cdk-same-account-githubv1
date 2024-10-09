@@ -12,7 +12,7 @@ mkdir build_artifacts
 cp cas-scheduler.war buildspec-lab.yml appspec.yml application_start.sh build_artifacts/
 echo "Downloading finished"
 echo "Extracting and assuming Deployer role for cross account"
-param_name="/matson-hello-world/$STAGE/deploy/role"
+# param_name="/matson-hello-world/$STAGE/deploy/role"
 # DEPLOY_ROLE=$(aws ssm get-parameter --name $param_name --with-decryption | jq -r ".Parameter.Value")
 # DEPLOY_ROLE=arn:aws:iam::954503069243:role/cdk-hnb659fds-deploy-role-954503069243-us-east-1
 # role=$(aws sts assume-role --role-arn $DEPLOY_ROLE --role-session-name api-deployer-session --duration-seconds 1800)
@@ -29,7 +29,15 @@ echo "Zipping files for codedeploy"
 sed -i "s|{{WAR_FILE_NAME}}|cas-scheduler.war|g" appspec.yml
 # zip -r $DEPLOYMENT_PACKAGE_NAME appspec.yml application_start.sh cas-scheduler.war
 echo "Copying zipped files to cross-account S3 bucket which will be utilized for codedeploy"
-aws s3 cp cas-scheduler.war $S3_BUCKET_PATH/ROOT.war
+# aws s3 cp cas-scheduler.war $S3_BUCKET_PATH/ROOT.war
+# Check if the WAR file exists before copying
+if [ -f "cas-scheduler.war" ]; then
+    echo "File exists. Proceeding to copy..."
+    aws s3 cp cas-scheduler.war $S3_BUCKET_PATH/ROOT.war
+else
+    echo "File cas-scheduler.war not found!"
+    exit 1
+fi
 # aws ssm send-command --document-name "AWS-RunShellScript" --targets \'[{"Key":"InstanceIds","Values":["i-04f30b7623100c3b2"]}]\' --parameters \'commands=["sudo /opt/apache-tomcat-9.0.95/bin/shutdown.sh","sudo rm -rf /opt/apache-tomcat-9.0.95/webapps/*", "aws s3 cp s3://test-cicdl3suawsbodhl63-lab/ROOT.war /opt/apache-tomcat-9.0.95/webapps/", "sudo /opt/apache-tomcat-9.0.95/bin/startup.sh"]\' --region us-east-1 
 aws ssm send-command \
   --document-name "AWS-RunShellScript" \
