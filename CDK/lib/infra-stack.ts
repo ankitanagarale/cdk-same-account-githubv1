@@ -14,7 +14,7 @@ export class MyInfraStack extends cdk.Stack {
       super(scope, id, props);
    
       new s3.Bucket(this, 'CodePipelineBucket', {
-        bucketName: `${this.stackName}-lab`,
+        bucketName: `${this.stackName}-sameaccount`,
         lifecycleRules: [{
           id: config.bucketLifecyclePolicy.id,
           enabled: config.bucketLifecyclePolicy.status === 'Enabled',
