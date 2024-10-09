@@ -46,7 +46,7 @@ export class CiCdAwsPipelineDemoStack extends cdk.Stack {
 
     // Dev stage and roles
     const devStage = pipeline.addStage(new MyPipelineAppStage(this, "dev", {
-      env: { account: "954503069243", region: "us-east-1" },
+      env: { account: "264852106485", region: "ap-south-1" },
     }));
 
     // Role for the dev stage
